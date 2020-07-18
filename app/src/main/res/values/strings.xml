@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Simple Calendar</string>
+    <string name="abonnement">Abonnement</string>
+    
+    <string name="setdate"> %1$s, %2$d.%3$d</string>
+    <string name="birthday"> Birthday</string>
+</resources>

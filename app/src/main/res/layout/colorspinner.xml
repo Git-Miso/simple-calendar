@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@drawable/dialog_bg"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:text="Settings"
+        android:textSize="16sp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#FFFFFF"
+        android:orientation="horizontal"
+        android:paddingTop="10dp">
+
+        <SeekBar
+            android:id="@+id/slider"
+            style="@style/Widget.AppCompat.SeekBar.Discrete"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="#FFFFFF"
+            android:max="5"
+            android:progress="0" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/sliderText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:background="#FFFFFF"
+        android:gravity="center_horizontal"
+        android:paddingTop="10dp"
+        android:paddingBottom="20dp"
+        android:text="no notification"
+        android:textSize="10sp" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="15dp"
+        android:layout_marginEnd="15dp"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/red"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:background="@color/red" />
+
+        <Button
+            android:id="@+id/orange"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:layout_weight="1"
+            android:background="@color/orange" />
+
+        <Button
+            android:id="@+id/green"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:background="@color/green" />
+
+        <Button
+            android:id="@+id/blue"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:background="@color/blue" />
+
+        <Button
+            android:id="@+id/dark"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:background="@color/dark" />
+
+        <Button
+            android:id="@+id/yellow"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:background="#FFC107"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/closeColorDialog"
+        android:layout_width="45dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="10dp"
+        android:layout_weight="1"
+        android:clickable="true"
+        android:tint="#FFFFFF"
+        app:fabCustomSize="45dp"
+        app:srcCompat="@drawable/ic_check_black_24dp" />
+
+</LinearLayout>

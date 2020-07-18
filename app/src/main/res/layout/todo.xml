@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center_horizontal"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/todo_add_button"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginEnd="25dp"
+            android:layout_marginBottom="25dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:tint="#FFFFFF"
+            android:src="@drawable/baseline_add_24"
+            app:fabCustomSize="50dp" />
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:id="@+id/linear_todo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/textView"
+                    android:layout_width="match_parent"
+                    android:layout_height="35dp"
+                    android:layout_marginTop="50dp"
+                    android:layout_marginBottom="10dp"
+                    android:gravity="center_horizontal|center_vertical"
+                    android:text="Daily Todo"
+                    android:textSize="24sp" />
+
+                <ImageView
+                    android:id="@+id/imageView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="40dp"
+                    app:srcCompat="@drawable/big_line" />
+
+                <CheckBox
+                    android:id="@+id/checkBox"
+                    android:layout_width="134dp"
+                    android:layout_height="58dp"
+                    android:button="@drawable/checkbox"
+                    android:checked="true"
+                    android:gravity="center"
+                    android:text="Workout"
+                    android:visibility="gone" />
+
+                <CheckBox
+                    android:id="@+id/checkBox2"
+                    android:layout_width="138dp"
+                    android:layout_height="58dp"
+                    android:button="@drawable/checkbox"
+                    android:gravity="center"
+                    android:text="Water"
+                    android:visibility="gone" />
+
+            </LinearLayout>
+        </ScrollView>
+    </RelativeLayout>
+
+
+</GridLayout>
