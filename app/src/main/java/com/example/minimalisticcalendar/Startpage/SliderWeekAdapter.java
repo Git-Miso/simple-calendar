@@ -99,20 +99,21 @@ public class SliderWeekAdapter extends PagerAdapter {
             view = layout(R.layout.design_theme, container);
 
             load(context, weekdate);
-            extras(view, weekdate, page);
-            init(view, page, weekdate);
+            checkForActions(view, weekdate, page);
+            initWeekPage(view, page, weekdate);
             setDates(view, weekdate);
 
             showActionButton(view);
 
-            new File(context.getFilesDir(), (Integer.parseInt(weekdate) - 2) + ".txt").delete(); //Delete old Data
+            deleteOldData(weekdate);
+
         }else{
             view = layout(R.layout.design_theme, container);
 
             weekdate = String.valueOf(Integer.parseInt(weekdate)+page-2);
             load(context, weekdate);
-            extras(view, weekdate, page);
-            init(view, page, weekdate);
+            checkForActions(view, weekdate, page);
+            initWeekPage(view, page, weekdate);
             setDates(view, weekdate);
 
             showActionButton(view);
@@ -146,7 +147,7 @@ public class SliderWeekAdapter extends PagerAdapter {
         });
     }
 
-    private void extras(View view, final String weekdate, int page){
+    private void checkForActions(View view, final String weekdate, int page){
         Bundle extras = ((Activity) context).getIntent().getExtras();
         if (extras != null) {
             String createdTitle = extras.getString("title");
@@ -234,12 +235,15 @@ public class SliderWeekAdapter extends PagerAdapter {
             c.set(Calendar.MINUTE, Integer.parseInt(timechars[1] + String.valueOf(timechars[2])));
         }
         c.set(Calendar.SECOND, 0);
+        c.set(Calendar.MILLISECOND, 0);
 
         Calendar c2 = Calendar.getInstance();
+        long currenttime = c2.getTimeInMillis();
         c2.setTime(c.getTime());
 
+
         assert createdcolor != null;
-        if (!existing && !notification.equals("no notification")) {
+        if (!existing && !notification.equals("no notification") && c.getTimeInMillis()>currenttime) {
 
             switch(notification) {
                 case "10 minutes":
@@ -294,7 +298,7 @@ public class SliderWeekAdapter extends PagerAdapter {
             setAlarm(c, createdtitle,createdcolor);
         }
 
-        if(!existing) {
+        if(!existing && c2.getTimeInMillis()>currenttime) {
             setAlarm(c2, createdtitle, createdcolor);
         }
         ((Activity) context).getIntent().removeExtra("title");
@@ -378,103 +382,84 @@ public class SliderWeekAdapter extends PagerAdapter {
         mPreferences.edit().putString("t"+list_todos.size(), "").apply();
 
         save(context, weekdate);
-        init(view, page, weekdate);
+        initWeekPage(view, page, weekdate);
         ((Activity) context).getIntent().removeExtra("day");
     }
 
 
-    private void init(final View view, int page, final String weekdate){
+    private void initWeekPage(final View view, int page, final String weekdate){
 
-        initTitle(view, page);
+        initWeekTitle(view, page);
 
-        final RecyclerView Monday = view.findViewById(R.id.monday_rec);
-        final design_RecyclerAdapter adapter = new design_RecyclerAdapter(context, mMonday, weekdate, "Monday");
-        Monday.setAdapter(adapter);
-        Monday.setLayoutManager(new LinearLayoutManager(context));
+        ArrayList<RecyclerView> Days = new ArrayList<>();
+        Days.add((RecyclerView) view.findViewById(R.id.monday_rec));
+        Days.add((RecyclerView) view.findViewById(R.id.tuesday_rec));
+        Days.add((RecyclerView) view.findViewById(R.id.wednesday_rec));
+        Days.add((RecyclerView) view.findViewById(R.id.thursday_rec));
+        Days.add((RecyclerView) view.findViewById(R.id.friday_rec));
+        Days.add((RecyclerView) view.findViewById(R.id.saturday_rec));
+        Days.add((RecyclerView) view.findViewById(R.id.sunday_rec));
 
-        RecyclerView Tuesday = view.findViewById(R.id.tuesday_rec);
-        final design_RecyclerAdapter adapter2 = new design_RecyclerAdapter(context, mTuesday, weekdate, "Tuesday");
-        Tuesday.setAdapter(adapter2);
-        Tuesday.setLayoutManager(new LinearLayoutManager(context));
+        for(RecyclerView day : Days){
+            final design_RecyclerAdapter adapter;
+            switch(Days.indexOf(day)) {
+                default: adapter = new design_RecyclerAdapter(context, mMonday, weekdate, "Monday"); break;
+                case 1: adapter = new design_RecyclerAdapter(context, mTuesday, weekdate, "Tuesday"); break;
+                case 2: adapter = new design_RecyclerAdapter(context, mWednesday, weekdate, "Wednesday"); break;
+                case 3: adapter = new design_RecyclerAdapter(context, mThursday, weekdate, "Thursday"); break;
+                case 4: adapter = new design_RecyclerAdapter(context, mFriday, weekdate, "Friday"); break;
+                case 5: adapter = new design_RecyclerAdapter(context, mSaturday, weekdate, "Saturday"); break;
+                case 6: adapter = new design_RecyclerAdapter(context, mSunday, weekdate, "Sunday"); break;
+            }
+            day.setAdapter(adapter);
+            day.setLayoutManager(new LinearLayoutManager(context));
+        }
 
-        RecyclerView Wednesday = view.findViewById(R.id.wednesday_rec);
-        final design_RecyclerAdapter adapter3 = new design_RecyclerAdapter(context, mWednesday, weekdate, "Wednesday");
-        Wednesday.setAdapter(adapter3);
-        Wednesday.setLayoutManager(new LinearLayoutManager(context));
-
-        final RecyclerView Thursday = view.findViewById(R.id.thursday_rec);
-        final design_RecyclerAdapter adapter4 = new design_RecyclerAdapter(context, mThursday, weekdate, "Thursday");
-        Thursday.setAdapter(adapter4);
-        Thursday.setLayoutManager(new LinearLayoutManager(context));
-
-        RecyclerView Friday = view.findViewById(R.id.friday_rec);
-        final design_RecyclerAdapter adapter5 = new design_RecyclerAdapter(context, mFriday, weekdate, "Friday");
-        Friday.setAdapter(adapter5);
-        Friday.setLayoutManager(new LinearLayoutManager(context));
-
-        RecyclerView Saturday = view.findViewById(R.id.saturday_rec);
-        final design_RecyclerAdapter adapter6 = new design_RecyclerAdapter(context, mSaturday, weekdate, "Saturday");
-        Saturday.setAdapter(adapter6);
-        Saturday.setLayoutManager(new LinearLayoutManager(context));
-
-        final RecyclerView Sunday = view.findViewById(R.id.sunday_rec);
-        final design_RecyclerAdapter adapter7 = new design_RecyclerAdapter(context, mSunday, weekdate, "Sunday");
-        Sunday.setAdapter(adapter7);
-        Sunday.setLayoutManager(new LinearLayoutManager(context));
-
-        initRecyclingHeight(Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday, view);
+        initRecyclingHeight(Days, view);
 
         initAddButtons(view, weekdate);
     }
 
-    private void initTitle(View view, Integer page){
+    private void initWeekTitle(View view, Integer page){
         TextView title = view.findViewById(R.id.textView6);
         String title_string;
 
         switch(page) {
             default:
-                title_string = page - 2 + "th week";
-                break;
+                title_string = page - 2 + "th week"; break;
             case 2:
-                title_string = "Current week";
-                break;
+                title_string = "Current week"; break;
             case 3:
-                title_string = "Next week";
-                break;
+                title_string = "Next week"; break;
             case 4:
-                title_string = "2nd week";
-                break;
+                title_string = "2nd week"; break;
             case 5:
-                title_string = "3rd week";
-                break;
+                title_string = "3rd week"; break;
         }
         title.setText(title_string);
     }
 
     //Sets the Height if you habe no dates. Design only
-    private void initRecyclingHeight(RecyclerView Monday, RecyclerView Tuesday, RecyclerView Wednesday, RecyclerView Thursday, RecyclerView Friday, RecyclerView Saturday, RecyclerView Sunday, View view){
+    private void initRecyclingHeight(ArrayList<RecyclerView> days, View view){
         int fortytwo = DPtoPixel(view,42);
 
-        if(mMonday.size()>0) {
-            Monday.setMinimumHeight(mMonday.size() * fortytwo);
-        }
-        if (mTuesday.size() > 0) {
-            Tuesday.setMinimumHeight(mTuesday.size() * fortytwo);
-        }
-        if(mWednesday.size()>0) {
-            Wednesday.setMinimumHeight(mWednesday.size() * fortytwo);
-        }
-        if(mThursday.size()>0) {
-            Thursday.setMinimumHeight(mThursday.size() * fortytwo);
-        }
-        if(mFriday.size()>0) {
-            Friday.setMinimumHeight(mFriday.size() * fortytwo);
-        }
-        if(mSaturday.size()>0) {
-            Saturday.setMinimumHeight(mSaturday.size() * fortytwo);
-        }
-        if(mSunday.size()>0) {
-            Sunday.setMinimumHeight(mSunday.size() * fortytwo);
+        for(RecyclerView day : days) {
+            switch (days.indexOf(day)) {
+                case 0:
+                    if (mMonday.size() > 0) { day.setMinimumHeight(mMonday.size() * fortytwo); }break;
+                case 1:
+                    if (mTuesday.size() > 0) { day.setMinimumHeight(mTuesday.size() * fortytwo); }break;
+                case 2:
+                    if (mWednesday.size() > 0) { day.setMinimumHeight(mWednesday.size() * fortytwo); }break;
+                case 3:
+                    if (mThursday.size() > 0) { day.setMinimumHeight(mThursday.size() * fortytwo); }break;
+                case 4:
+                    if (mFriday.size() > 0) { day.setMinimumHeight(mFriday.size() * fortytwo); }break;
+                case 5:
+                    if (mSaturday.size() > 0) { day.setMinimumHeight(mSaturday.size() * fortytwo); }break;
+                case 6:
+                    if (mSunday.size() > 0) { day.setMinimumHeight(mSunday.size() * fortytwo); }break;
+            }
         }
     }
 
@@ -691,7 +676,7 @@ public class SliderWeekAdapter extends PagerAdapter {
                 myColorDialog.setContentView(R.layout.colorspinner);
                 myColorDialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
                 myColorDialog.show();
-                myColorDialog.findViewById(R.id.blue).setAlpha(0.5F);
+                setColorAtOpening(myDialog.findViewById(R.id.textView).getTag().toString(), myColorDialog);
 
                 FloatingActionButton close = myColorDialog.findViewById(R.id.closeColorDialog);
                 close.setOnClickListener(new View.OnClickListener() {
@@ -706,14 +691,14 @@ public class SliderWeekAdapter extends PagerAdapter {
                 slider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                     @Override
                     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                        String notification = "no Notification";
+                        String notification = "no notification";
                         switch(progress){
                             case 0: notification = "no notification"; break;
-                            case 1: notification = "10 minutes"; break;
-                            case 2: notification = "30 minutes"; break;
-                            case 3: notification = "1 hour"; break;
-                            case 4: notification = "1 day"; break;
-                            case 5: notification = "1 week"; break;
+                            case 1: notification = "10 minutes before start"; break;
+                            case 2: notification = "30 minutes before start"; break;
+                            case 3: notification = "1 hour before start"; break;
+                            case 4: notification = "1 day before start"; break;
+                            case 5: notification = "1 week before start"; break;
                         }
                         sliderText.setText(notification);
                         myDialog.findViewById(R.id.textView).setTag(R.id.slider, notification);
@@ -736,6 +721,7 @@ public class SliderWeekAdapter extends PagerAdapter {
                         resetColorSelection(myColorDialog);
                         myDialog.findViewById(R.id.textView).setTag("red");
                         myColorDialog.findViewById(R.id.red).setAlpha(0.5F);
+                        myColorDialog.findViewById(R.id.red).setForeground(context.getDrawable(R.drawable.ic_check_black_24dp));
                     }
                 });
                 myColorDialog.findViewById(R.id.blue).setOnClickListener(new View.OnClickListener() {
@@ -745,6 +731,7 @@ public class SliderWeekAdapter extends PagerAdapter {
                         myDialog.findViewById(R.id.textView).setTag("blue");
                         resetColorSelection(myColorDialog);
                         myColorDialog.findViewById(R.id.blue).setAlpha(0.5F);
+                        myColorDialog.findViewById(R.id.blue).setForeground(context.getDrawable(R.drawable.ic_check_black_24dp));
                     }
                 });
                 myColorDialog.findViewById(R.id.green).setOnClickListener(new View.OnClickListener() {
@@ -754,6 +741,7 @@ public class SliderWeekAdapter extends PagerAdapter {
                         myDialog.findViewById(R.id.textView).setTag("green");
                         resetColorSelection(myColorDialog);
                         myColorDialog.findViewById(R.id.green).setAlpha(0.5F);
+                        myColorDialog.findViewById(R.id.green).setForeground(context.getDrawable(R.drawable.ic_check_black_24dp));
                     }
                 });
                 myColorDialog.findViewById(R.id.dark).setOnClickListener(new View.OnClickListener() {
@@ -763,6 +751,7 @@ public class SliderWeekAdapter extends PagerAdapter {
                         myDialog.findViewById(R.id.textView).setTag("dark");
                         resetColorSelection(myColorDialog);
                         myColorDialog.findViewById(R.id.dark).setAlpha(0.5F);
+                        myColorDialog.findViewById(R.id.dark).setForeground(context.getDrawable(R.drawable.ic_check_black_24dp));
                     }
                 });
                 myColorDialog.findViewById(R.id.orange).setOnClickListener(new View.OnClickListener() {
@@ -772,6 +761,7 @@ public class SliderWeekAdapter extends PagerAdapter {
                         myDialog.findViewById(R.id.textView).setTag("orange");
                         resetColorSelection(myColorDialog);
                         myColorDialog.findViewById(R.id.orange).setAlpha(0.5F);
+                        myColorDialog.findViewById(R.id.orange).setForeground(context.getDrawable(R.drawable.ic_check_black_24dp));
                     }
                 });
                 myColorDialog.findViewById(R.id.yellow).setOnClickListener(new View.OnClickListener() {
@@ -839,6 +829,31 @@ public class SliderWeekAdapter extends PagerAdapter {
             }
         });
         myDialog.show();
+    }
+
+    private void setColorAtOpening(String color, Dialog myColorDialog){
+        switch(color){
+            case "red":
+                myColorDialog.findViewById(R.id.red).setAlpha(0.5F);
+                myColorDialog.findViewById(R.id.red).setForeground(context.getDrawable(R.drawable.ic_check_black_24dp));
+                break;
+            case "blue":
+                myColorDialog.findViewById(R.id.blue).setAlpha(0.5F);
+                myColorDialog.findViewById(R.id.blue).setForeground(context.getDrawable(R.drawable.ic_check_black_24dp));
+                break;
+            case "green":
+                myColorDialog.findViewById(R.id.green).setAlpha(0.5F);
+                myColorDialog.findViewById(R.id.green).setForeground(context.getDrawable(R.drawable.ic_check_black_24dp));
+                break;
+            case "orange":
+                myColorDialog.findViewById(R.id.orange).setAlpha(0.5F);
+                myColorDialog.findViewById(R.id.orange).setForeground(context.getDrawable(R.drawable.ic_check_black_24dp));
+                break;
+            case "dark":
+                myColorDialog.findViewById(R.id.dark).setAlpha(0.5F);
+                myColorDialog.findViewById(R.id.dark).setForeground(context.getDrawable(R.drawable.ic_check_black_24dp));
+                break;
+        }
     }
 
 
@@ -1176,6 +1191,11 @@ public class SliderWeekAdapter extends PagerAdapter {
         myColorDialog.findViewById(R.id.green).setAlpha(1F);
         myColorDialog.findViewById(R.id.dark).setAlpha(1F);
         myColorDialog.findViewById(R.id.orange).setAlpha(1F);
+        myColorDialog.findViewById(R.id.red).setForeground(null);
+        myColorDialog.findViewById(R.id.blue).setForeground(null);
+        myColorDialog.findViewById(R.id.green).setForeground(null);
+        myColorDialog.findViewById(R.id.dark).setForeground(null);
+        myColorDialog.findViewById(R.id.orange).setForeground(null);
     }
 
     private void Create_New(final Context mContext, final String day, final String weekdate){
@@ -1218,7 +1238,7 @@ public class SliderWeekAdapter extends PagerAdapter {
                 myColorDialog.setContentView(R.layout.colorspinner);
                 myColorDialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
                 myColorDialog.show();
-                myColorDialog.findViewById(R.id.blue).setAlpha(0.5F);
+                setColorAtOpening(myDialog.findViewById(R.id.textView).getTag().toString(), myColorDialog);
 
                 FloatingActionButton close = myColorDialog.findViewById(R.id.closeColorDialog);
                 close.setOnClickListener(new View.OnClickListener() {
@@ -1233,14 +1253,14 @@ public class SliderWeekAdapter extends PagerAdapter {
                 slider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                     @Override
                     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                        String notification = "no Notification";
+                        String notification = "no notification";
                         switch(progress){
                             case 0: notification = "no notification"; break;
-                            case 1: notification = "10 minutes"; break;
-                            case 2: notification = "30 minutes"; break;
-                            case 3: notification = "1 hour"; break;
-                            case 4: notification = "1 day"; break;
-                            case 5: notification = "1 week"; break;
+                            case 1: notification = "10 minutes before start"; break;
+                            case 2: notification = "30 minutes before start"; break;
+                            case 3: notification = "1 hour before start"; break;
+                            case 4: notification = "1 day before start"; break;
+                            case 5: notification = "1 week before start"; break;
                         }
                         sliderText.setText(notification);
                         myDialog.findViewById(R.id.textView).setTag(R.id.slider, notification);
@@ -1263,6 +1283,7 @@ public class SliderWeekAdapter extends PagerAdapter {
                         resetColorSelection(myColorDialog);
                         myDialog.findViewById(R.id.textView).setTag("red");
                         myColorDialog.findViewById(R.id.red).setAlpha(0.5F);
+                        myColorDialog.findViewById(R.id.red).setForeground(context.getDrawable(R.drawable.ic_check_black_24dp));
                     }
                 });
                 myColorDialog.findViewById(R.id.blue).setOnClickListener(new View.OnClickListener() {
@@ -1272,6 +1293,7 @@ public class SliderWeekAdapter extends PagerAdapter {
                         myDialog.findViewById(R.id.textView).setTag("blue");
                         resetColorSelection(myColorDialog);
                         myColorDialog.findViewById(R.id.blue).setAlpha(0.5F);
+                        myColorDialog.findViewById(R.id.blue).setForeground(context.getDrawable(R.drawable.ic_check_black_24dp));
                     }
                 });
                 myColorDialog.findViewById(R.id.green).setOnClickListener(new View.OnClickListener() {
@@ -1281,6 +1303,7 @@ public class SliderWeekAdapter extends PagerAdapter {
                         myDialog.findViewById(R.id.textView).setTag("green");
                         resetColorSelection(myColorDialog);
                         myColorDialog.findViewById(R.id.green).setAlpha(0.5F);
+                        myColorDialog.findViewById(R.id.green).setForeground(context.getDrawable(R.drawable.ic_check_black_24dp));
                     }
                 });
                 myColorDialog.findViewById(R.id.dark).setOnClickListener(new View.OnClickListener() {
@@ -1290,6 +1313,7 @@ public class SliderWeekAdapter extends PagerAdapter {
                         myDialog.findViewById(R.id.textView).setTag("dark");
                         resetColorSelection(myColorDialog);
                         myColorDialog.findViewById(R.id.dark).setAlpha(0.5F);
+                        myColorDialog.findViewById(R.id.dark).setForeground(context.getDrawable(R.drawable.ic_check_black_24dp));
                     }
                 });
                 myColorDialog.findViewById(R.id.orange).setOnClickListener(new View.OnClickListener() {
@@ -1299,6 +1323,7 @@ public class SliderWeekAdapter extends PagerAdapter {
                         myDialog.findViewById(R.id.textView).setTag("orange");
                         resetColorSelection(myColorDialog);
                         myColorDialog.findViewById(R.id.orange).setAlpha(0.5F);
+                        myColorDialog.findViewById(R.id.orange).setForeground(context.getDrawable(R.drawable.ic_check_black_24dp));
                     }
                 });
                 myColorDialog.findViewById(R.id.yellow).setOnClickListener(new View.OnClickListener() {
@@ -1526,6 +1551,33 @@ public class SliderWeekAdapter extends PagerAdapter {
         }
     }
 
+    private void deleteOldData(String weekdate){
+        FileInputStream fis = null;
+        String FILE_NAME = Integer.parseInt(weekdate) - 2 + ".txt";
+        try {
+            fis = context.openFileInput(FILE_NAME);
+            InputStreamReader isr = new InputStreamReader(fis);
+            BufferedReader br = new BufferedReader(isr);
+            String text;
+
+            while ((text = br.readLine()) != null) {
+                String[] newtext = text.split(",");
+                removeAlert(newtext[1]);
+            }
+        } catch (
+                IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (fis != null) {
+                try {
+                    fis.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        new File(context.getFilesDir(), (Integer.parseInt(weekdate) - 2) + ".txt").delete();
+    }
 
     // Sorting and Lists
     private void sortevery(){

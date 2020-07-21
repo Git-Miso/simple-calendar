@@ -1,6 +1,7 @@
 package com.example.minimalisticcalendar.More;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.example.minimalisticcalendar.Notifications.Alert;
 import com.google.gson.Gson;
@@ -69,6 +70,7 @@ public class cFiles {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        Log.d("Alerts in file: ", fulltext.toString());
         return fulltext.toString();
     }
 

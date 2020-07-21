@@ -12,6 +12,7 @@ import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Calendar;
 
 public class AlertReceiver extends BroadcastReceiver {
 
@@ -24,28 +25,43 @@ public class AlertReceiver extends BroadcastReceiver {
         Type AlertType = new TypeToken<ArrayList<Alert>>() {}.getType();
         ArrayList<Alert> allAlerts = gson.fromJson(text, AlertType);
 
-        String desc;
-        switch(allAlerts.get(0).time().charAt(allAlerts.size()-1)){
-            case 'x':
-                desc = "starts in 10 minutes"; break;
-            case 's':
-                desc = "starts in 30 minutes"; break;
-            case 'm':
-                desc = "starts in 1 hour"; break;
-            case 'l':
-                desc = "starts in one day"; break;
-            case 'e':
-                desc = "starts in one week"; break;
-            default:
-                desc = "starts now"; break;
+        Long currentTime = Calendar.getInstance().getTimeInMillis();
+
+        int i = 0;
+        while(!allAlerts.get(i).time().substring(0, 9).equals(String.valueOf(currentTime).substring(0, 9)) && i < allAlerts.size()-1){
+            i++;
         }
+        
+        if(allAlerts.get(i).time().substring(0, 9).equals(String.valueOf(currentTime).substring(0, 9))) {
+            String desc;
+            switch (allAlerts.get(i).time().charAt(allAlerts.size() - 1)) {
+                case 'x':
+                    desc = "starts in 10 minutes";
+                    break;
+                case 's':
+                    desc = "starts in 30 minutes";
+                    break;
+                case 'm':
+                    desc = "starts in 1 hour";
+                    break;
+                case 'l':
+                    desc = "starts in one day";
+                    break;
+                case 'e':
+                    desc = "starts in one week";
+                    break;
+                default:
+                    desc = "starts now";
+                    break;
+            }
 
 
-        if(!allAlerts.get(0).title().equals("--deleted--")){
-            NotificationCompat.Builder nb = notificationHelper.getChannelNotification(allAlerts.get(0).title(), desc);
-            notificationHelper.getManager().notify(1, nb.build());
+            if (!allAlerts.get(i).title().equals("--deleted--")) {
+                NotificationCompat.Builder nb = notificationHelper.getChannelNotification(allAlerts.get(i).title(), desc);
+                notificationHelper.getManager().notify(currentTime.intValue(), nb.build());
+            }
+            allAlerts.remove(i);
+            cFiles.saveAlerts(context, allAlerts);
         }
-        allAlerts.remove(0);
-        cFiles.saveAlerts(context, allAlerts);
     }
 }
