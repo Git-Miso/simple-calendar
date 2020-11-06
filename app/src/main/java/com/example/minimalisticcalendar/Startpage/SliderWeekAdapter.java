@@ -175,49 +175,49 @@ public class SliderWeekAdapter extends PagerAdapter {
         c.set(Calendar.WEEK_OF_YEAR, Integer.parseInt(weekdate));
         switch (day) {
             case "Monday":
-                existing = check_existing(mMonday, createdtitle);
+                existing = checkDuplicate(mMonday, createdtitle);
                 if(!existing) {
                     mMonday.add(new CDate(createdtitle,createdtime,createdcolor));
                     c.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
                 }
                 break;
             case "Tuesday":
-                existing = check_existing(mTuesday, createdtitle);
+                existing = checkDuplicate(mTuesday, createdtitle);
                 if(!existing) {
                     mTuesday.add(new CDate(createdtitle,createdtime,createdcolor));
                     c.set(Calendar.DAY_OF_WEEK, Calendar.TUESDAY);
                 }
                 break;
             case "Wednesday":
-                existing = check_existing(mWednesday, createdtitle);
+                existing = checkDuplicate(mWednesday, createdtitle);
                 if(!existing) {
                     mWednesday.add(new CDate(createdtitle,createdtime,createdcolor));
                     c.set(Calendar.DAY_OF_WEEK, Calendar.WEDNESDAY);
                 }
                 break;
             case "Thursday":
-                existing = check_existing(mThursday, createdtitle);
+                existing = checkDuplicate(mThursday, createdtitle);
                 if(!existing) {
                     mThursday.add(new CDate(createdtitle,createdtime,createdcolor));
                     c.set(Calendar.DAY_OF_WEEK, Calendar.THURSDAY);
                 }
                 break;
             case "Friday":
-                existing = check_existing(mFriday, createdtitle);
+                existing = checkDuplicate(mFriday, createdtitle);
                 if(!existing) {
                     mFriday.add(new CDate(createdtitle,createdtime,createdcolor));
                     c.set(Calendar.DAY_OF_WEEK, Calendar.FRIDAY);
                 }
                 break;
             case "Saturday":
-                existing = check_existing(mSaturday, createdtitle);
+                existing = checkDuplicate(mSaturday, createdtitle);
                 if(!existing) {
                     mSaturday.add(new CDate(createdtitle,createdtime,createdcolor));
                     c.set(Calendar.DAY_OF_WEEK, Calendar.SATURDAY);
                 }
                 break;
             case "Sunday":
-                existing = check_existing(mSunday, createdtitle);
+                existing = checkDuplicate(mSunday, createdtitle);
                 if(!existing) {
                     mSunday.add(new CDate(createdtitle,createdtime,createdcolor));
                     c.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
@@ -1660,7 +1660,7 @@ public class SliderWeekAdapter extends PagerAdapter {
         return finalAlerts;
     }
 
-    private Boolean check_existing(ArrayList<CDate> Dates, String createdtitle){
+    private Boolean checkDuplicate(ArrayList<CDate> Dates, String createdtitle){
         for(int i = 0; i<Dates.size(); i++){
             if(Dates.get(i).title().equals(createdtitle)){
                 Toast toast = Toast.makeText(context, "Title already exists", Toast.LENGTH_LONG);
