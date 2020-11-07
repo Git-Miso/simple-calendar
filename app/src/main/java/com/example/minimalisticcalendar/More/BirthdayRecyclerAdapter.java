@@ -23,13 +23,13 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Calendar;
 
-public class GeburtstageAdapter extends RecyclerView.Adapter<GeburtstageAdapter.ViewHolderMoreView>{
+public class BirthdayRecyclerAdapter extends RecyclerView.Adapter<BirthdayRecyclerAdapter.ViewHolderMoreView> {
 
 
     private ArrayList<Birthday> mBirthdays;
     private Context mContext;
 
-    public GeburtstageAdapter(Context context, ArrayList<Birthday> Birthdays){
+    public BirthdayRecyclerAdapter(Context context, ArrayList<Birthday> Birthdays) {
         mBirthdays = Birthdays;
         mContext = context;
     }
@@ -38,7 +38,7 @@ public class GeburtstageAdapter extends RecyclerView.Adapter<GeburtstageAdapter.
     @Override
     public ViewHolderMoreView onCreateViewHolder(ViewGroup parent, int viewType) {
 
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.geburtstag_rec_item,parent,false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.geburtstag_rec_item, parent, false);
         final ViewHolderMoreView holder = new ViewHolderMoreView(view);
 
         holder.parentlayout.setOnClickListener(new View.OnClickListener() {
@@ -56,34 +56,34 @@ public class GeburtstageAdapter extends RecyclerView.Adapter<GeburtstageAdapter.
         String string = mBirthdays.get(holder.getAdapterPosition()).time();
         holder.time.setText(string);
 
-            char[] date = mBirthdays.get(holder.getAdapterPosition()).time().toCharArray();
+        char[] date = mBirthdays.get(holder.getAdapterPosition()).time().toCharArray();
 
-            Calendar c = Calendar.getInstance();
-            int currentday = c.get(Calendar.DAY_OF_MONTH);
-            int currentmonth = c.get(Calendar.MONTH)+1;
+        Calendar c = Calendar.getInstance();
+        int currentday = c.get(Calendar.DAY_OF_MONTH);
+        int currentmonth = c.get(Calendar.MONTH) + 1;
 
-            StringBuilder day = new StringBuilder();
-            day.append(date[0]);
-            day.append(date[1]);
-            StringBuilder month = new StringBuilder();
-            month.append(date[3]);
-            month.append(date[4]);
-            if (currentmonth == Integer.parseInt(month.toString())) {
-                if (Integer.parseInt(day.toString())-currentday < 14 && Integer.parseInt(day.toString())-currentday >= 0) {
-                    holder.title.setText("> "+mBirthdays.get(holder.getAdapterPosition()).title());
-                }
+        StringBuilder day = new StringBuilder();
+        day.append(date[0]);
+        day.append(date[1]);
+        StringBuilder month = new StringBuilder();
+        month.append(date[3]);
+        month.append(date[4]);
+        if (currentmonth == Integer.parseInt(month.toString())) {
+            if (Integer.parseInt(day.toString()) - currentday < 14 && Integer.parseInt(day.toString()) - currentday >= 0) {
+                holder.title.setText("> " + mBirthdays.get(holder.getAdapterPosition()).title());
             }
+        }
     }
 
     @Override
-    public int getItemCount(){
+    public int getItemCount() {
         return mBirthdays.size();
     }
 
-    private void onTileClicked(final ViewHolderMoreView holder, final View view){
+    private void onTileClicked(final ViewHolderMoreView holder, final View view) {
         AlertDialog.Builder alert = new AlertDialog.Builder(mContext);
         alert.setTitle("Delete");
-        alert.setMessage("Are you sure you want to delete the birthday '"+holder.title.getText()+"'");
+        alert.setMessage("Are you sure you want to delete this birthday: '" + holder.title.getText() + "'");
         alert.setPositiveButton("YES", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -93,16 +93,17 @@ public class GeburtstageAdapter extends RecyclerView.Adapter<GeburtstageAdapter.
                 Gson gson = new Gson();
 
                 String fulltext = cFiles.loadBirthdays(mContext);
-                Type BirthdayType = new TypeToken<ArrayList<Birthday>>(){}.getType();
+                Type BirthdayType = new TypeToken<ArrayList<Birthday>>() {
+                }.getType();
                 Geburtstage = gson.fromJson(fulltext, BirthdayType);
                 Geburtstage.remove(holder.getAdapterPosition());
 
                 cFiles.saveBirthdays(mContext, Geburtstage);
 
                 Intent intent = new Intent(view.getContext(), StartpageBackground.class);
-                intent.putExtra("goGeburtstage",true);
+                intent.putExtra("goGeburtstage", true);
                 view.getContext().startActivity(intent);
-                ((Activity) view.getContext()).overridePendingTransition(0,0);
+                ((Activity) view.getContext()).overridePendingTransition(0, 0);
             }
         });
         alert.setNegativeButton("NO", new DialogInterface.OnClickListener() {
@@ -116,18 +117,17 @@ public class GeburtstageAdapter extends RecyclerView.Adapter<GeburtstageAdapter.
 
     }
 
-    static class ViewHolderMoreView extends RecyclerView.ViewHolder
-        {
+    static class ViewHolderMoreView extends RecyclerView.ViewHolder {
 
-            TextView title;
-            TextView time;
-            RelativeLayout parentlayout;
+        TextView title;
+        TextView time;
+        RelativeLayout parentlayout;
 
-            ViewHolderMoreView(@NonNull View itemView) {
-                super(itemView);
-                title = itemView.findViewById(R.id.title);
-                time = itemView.findViewById(R.id.time);
-                parentlayout = itemView.findViewById(R.id.parentlayout);
-            }
+        ViewHolderMoreView(@NonNull View itemView) {
+            super(itemView);
+            title = itemView.findViewById(R.id.title);
+            time = itemView.findViewById(R.id.time);
+            parentlayout = itemView.findViewById(R.id.parentlayout);
         }
+    }
 }

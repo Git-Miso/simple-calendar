@@ -7,10 +7,7 @@ import android.content.Intent;
 import androidx.core.app.NotificationCompat;
 
 import com.example.minimalisticcalendar.More.cFiles;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Calendar;
 
@@ -20,31 +17,28 @@ public class AlertReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         NotificationHelper notificationHelper = new NotificationHelper(context);
 
-        Gson gson = new Gson();
-        String text = cFiles.loadAlerts(context);
-        Type AlertType = new TypeToken<ArrayList<Alert>>() {}.getType();
-        ArrayList<Alert> allAlerts = gson.fromJson(text, AlertType);
+        ArrayList<Alert> allAlerts = cFiles.loadAlerts(context);
 
         Long currentTime = Calendar.getInstance().getTimeInMillis();
 
         int i = 0;
-        while(!allAlerts.get(i).time().substring(0, 9).equals(String.valueOf(currentTime).substring(0, 9)) && i < allAlerts.size()-1){
+        while (!allAlerts.get(i).time().substring(0, 9).equals(String.valueOf(currentTime).substring(0, 9)) && i < allAlerts.size() - 1) {
             i++;
         }
-        
-        if(allAlerts.get(i).time().substring(0, 9).equals(String.valueOf(currentTime).substring(0, 9))) {
+
+        if (allAlerts.get(i).time().substring(0, 9).equals(String.valueOf(currentTime).substring(0, 9))) {
             String desc;
             switch (allAlerts.get(i).time().charAt(allAlerts.size() - 1)) {
-                case 'x':
+                case 'a':
                     desc = "starts in 10 minutes";
                     break;
-                case 's':
+                case 'b':
                     desc = "starts in 30 minutes";
                     break;
-                case 'm':
+                case 'c':
                     desc = "starts in 1 hour";
                     break;
-                case 'l':
+                case 'd':
                     desc = "starts in one day";
                     break;
                 case 'e':

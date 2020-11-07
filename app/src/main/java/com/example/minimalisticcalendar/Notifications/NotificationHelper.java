@@ -21,7 +21,7 @@ import com.example.minimalisticcalendar.Startpage.StartpageBackground;
 public class NotificationHelper extends ContextWrapper {
 
     public static final String channelID = "channelID";
-    public static final String channelName = " Reminder";
+    public static final String channelName = "Reminder";
     private NotificationManager mManager;
 
     public NotificationHelper(Context base) {
@@ -54,7 +54,7 @@ public class NotificationHelper extends ContextWrapper {
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 1, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         Bitmap icon = BitmapFactory.decodeResource(this.getResources(),
-                R.drawable.logo);
+                R.drawable.time_over);
 
         return new NotificationCompat.Builder(getApplicationContext(), channelID)
                 .setContentTitle(title)
@@ -62,7 +62,7 @@ public class NotificationHelper extends ContextWrapper {
                 .setSmallIcon(R.drawable.time_over)
                 .setContentIntent(pendingIntent)
                 //.setLargeIcon(icon)
-                .setColor(Color.RED)
+                .setColor(Color.GRAY)
                 .setAutoCancel(true);
     }
 }

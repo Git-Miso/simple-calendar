@@ -30,6 +30,7 @@ public class StartpageBackground extends AppCompatActivity {
         mSlideViewPager.setCurrentItem(1);
         mSlideViewPager.setOffscreenPageLimit(2);
 
+        //scroll to the week after creating something
         Bundle extras = this.getIntent().getExtras();
         if (extras != null) {
             if (extras.getString("week") != null) {
@@ -38,10 +39,10 @@ public class StartpageBackground extends AppCompatActivity {
                 int setposition = Integer.parseInt(extras.getString("week")) - current + 2;
                 mSlideViewPager.setCurrentItem(setposition);
             }
-            if(extras.getBoolean("goHabits", false)){
+            if (extras.getBoolean("goHabits", false)) {
                 mSlideViewPager.setCurrentItem(1);
             }
-            if(extras.getBoolean("goGeburtstage", false)){
+            if (extras.getBoolean("goGeburtstage", false)) {
                 mSlideViewPager.setCurrentItem(0);
             }
         }
