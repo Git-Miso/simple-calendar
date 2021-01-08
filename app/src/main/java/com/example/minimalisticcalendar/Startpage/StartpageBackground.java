@@ -1,14 +1,25 @@
 package com.example.minimalisticcalendar.Startpage;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager.widget.ViewPager;
 
+import com.example.minimalisticcalendar.More.cFiles;
+import com.example.minimalisticcalendar.Notifications.Alert;
 import com.example.minimalisticcalendar.R;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Locale;
 
 
 public class StartpageBackground extends AppCompatActivity {
@@ -18,6 +29,7 @@ public class StartpageBackground extends AppCompatActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        deleteOldData();
         setTheme(R.style.AppTheme);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.slide_background);
@@ -36,7 +48,7 @@ public class StartpageBackground extends AppCompatActivity {
             if (extras.getString("week") != null) {
                 Calendar calendar = Calendar.getInstance();
                 int current = calendar.get(Calendar.WEEK_OF_YEAR);
-                int setposition = Integer.parseInt(extras.getString("week")) - current + 2;
+                int setposition = Integer.parseInt(extras.getString("week")) - current;
                 mSlideViewPager.setCurrentItem(setposition);
             }
             if (extras.getBoolean("goHabits", false)) {
@@ -70,5 +82,47 @@ public class StartpageBackground extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         mSlideViewPager.setCurrentItem(1);
+    }
+
+
+    private void deleteOldData() {
+        Context context = this.getApplicationContext();
+        String weekdate = new SimpleDateFormat("w", Locale.ENGLISH).format(new java.util.Date());
+        FileInputStream fis = null;
+        String FILE_NAME = Integer.parseInt(weekdate) - 2 + ".txt";
+        try {
+            fis = context.openFileInput(FILE_NAME);
+            InputStreamReader isr = new InputStreamReader(fis);
+            BufferedReader br = new BufferedReader(isr);
+            String text;
+
+            while ((text = br.readLine()) != null) {
+                String[] newtext = text.split(",");
+                cFiles.removeAlarm(context ,newtext[1]);
+            }
+        } catch (
+                IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (fis != null) {
+                try {
+                    fis.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        new File(context.getFilesDir(), (Integer.parseInt(weekdate) - 2) + ".txt").delete();
+
+        ArrayList<Alert> alertslist = cFiles.loadAlerts(context);
+        ArrayList<Alert> finalAlerts = new ArrayList<>();
+
+        for (Alert alert : alertslist) {
+            if (Integer.parseInt(alert.time().substring(0, 9)) > Integer.parseInt(String.valueOf(Calendar.getInstance().getTimeInMillis()).substring(0, 9))) {
+                finalAlerts.add(alert);
+            }
+        }
+
+        cFiles.saveAlerts(context, finalAlerts);
     }
 }

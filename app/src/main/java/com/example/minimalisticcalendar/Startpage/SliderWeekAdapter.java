@@ -203,8 +203,6 @@ public class SliderWeekAdapter extends PagerAdapter {
             }
 
             cFiles.saveBirthdays(context, Birthdays);
-
-            Birthdays.add(new Birthday("asd", "12.00"));
         }
         return Birthdays;
     }

@@ -28,7 +28,7 @@ public class AlertReceiver extends BroadcastReceiver {
 
         if (allAlerts.get(i).time().substring(0, 9).equals(String.valueOf(currentTime).substring(0, 9))) {
             String desc;
-            switch (allAlerts.get(i).time().charAt(allAlerts.size() - 1)) {
+            switch (allAlerts.get(i).time().charAt(allAlerts.get(i).time().length()-1)) {
                 case 'a':
                     desc = "starts in 10 minutes";
                     break;

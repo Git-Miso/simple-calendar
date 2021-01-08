@@ -1,20 +1,15 @@
 package com.example.minimalisticcalendar.Startpage;
 
 import android.app.Activity;
-import android.app.AlarmManager;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
@@ -28,54 +23,26 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.minimalisticcalendar.More.WeekRecyclerAdapter;
 import com.example.minimalisticcalendar.More.cFiles;
-import com.example.minimalisticcalendar.Notifications.Alert;
-import com.example.minimalisticcalendar.Notifications.AlertReceiver;
 import com.example.minimalisticcalendar.R;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Objects;
 
-import static android.content.Context.MODE_PRIVATE;
-
 public class WeekPage {
     Context context;
-    private ArrayList<CDate> mMonday;
-    private ArrayList<CDate> mTuesday;
-    private ArrayList<CDate> mWednesday;
-    private ArrayList<CDate> mThursday;
-    private ArrayList<CDate> mFriday;
-    private ArrayList<CDate> mSaturday;
-    private ArrayList<CDate> mSunday;
+    private CWeek mWeek;
 
     private final int KEEP_DATE = -1;
 
     public WeekPage(Context c, String weekdate, int page, View view) {
         context = c;
-        mMonday = new ArrayList<>();
-        mTuesday = new ArrayList<>();
-        mWednesday = new ArrayList<>();
-        mThursday = new ArrayList<>();
-        mFriday = new ArrayList<>();
-        mSaturday = new ArrayList<>();
-        mSunday = new ArrayList<>();
 
-        if (page == 2) { // current week
-            deleteOldData(weekdate);
-        }
-
-        load(context, weekdate);
+        mWeek = cFiles.loadWeek(context, weekdate);
         checkForActions(view, weekdate, page);
         initWeekPage(view, page, weekdate);
         setDates(view, weekdate);
@@ -86,6 +53,7 @@ public class WeekPage {
         Bundle extras = ((Activity) context).getIntent().getExtras();
         if (extras != null) {
             String createdTitle = extras.getString("title");
+            String createdDesc = extras.getString("desc");
             String createdColor = extras.getString("color");
             String createdNotification = extras.getString("notification");
             String day = extras.getString("day");
@@ -95,220 +63,18 @@ public class WeekPage {
             if (weekdate.equals(week)) {
                 if (createdTitle != null) {
                     Integer createdTime = Integer.parseInt(Objects.requireNonNull(extras.getString("time")));
-                    createDate(createdTitle, createdTime, createdColor, day, weekdate, createdNotification);
+                    mWeek.addDate(context, day, weekdate, createdTitle, createdDesc, createdTime, createdColor, createdNotification);
+                    ((Activity) context).getIntent().removeExtra("title");
+                    cFiles.saveWeek(context, weekdate, mWeek);
                 }
 
                 if (day != null && delpos != KEEP_DATE) {
-                    deleteDate(day, delpos, view, weekdate, page);
+                    mWeek.deleteDate(context, day, delpos, view, weekdate);
+                    initWeekPage(view, page, weekdate);
+                    ((Activity) context).getIntent().removeExtra("day");
                 }
             }
         }
-    }
-
-    private void createDate(String createdtitle, Integer createdtime, String createdcolor, String day, String weekdate, String notification) {
-        boolean isExisting = false;
-        Calendar c = Calendar.getInstance();
-        c.set(Calendar.WEEK_OF_YEAR, Integer.parseInt(weekdate));
-
-        switch (day) {
-            case "Monday":
-                isExisting = checkDuplicate(mMonday, createdtitle);
-                if (!isExisting) {
-                    mMonday.add(new CDate(createdtitle, createdtime, createdcolor));
-                    c.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
-                }
-                break;
-            case "Tuesday":
-                isExisting = checkDuplicate(mTuesday, createdtitle);
-                if (!isExisting) {
-                    mTuesday.add(new CDate(createdtitle, createdtime, createdcolor));
-                    c.set(Calendar.DAY_OF_WEEK, Calendar.TUESDAY);
-                }
-                break;
-            case "Wednesday":
-                isExisting = checkDuplicate(mWednesday, createdtitle);
-                if (!isExisting) {
-                    mWednesday.add(new CDate(createdtitle, createdtime, createdcolor));
-                    c.set(Calendar.DAY_OF_WEEK, Calendar.WEDNESDAY);
-                }
-                break;
-            case "Thursday":
-                isExisting = checkDuplicate(mThursday, createdtitle);
-                if (!isExisting) {
-                    mThursday.add(new CDate(createdtitle, createdtime, createdcolor));
-                    c.set(Calendar.DAY_OF_WEEK, Calendar.THURSDAY);
-                }
-                break;
-            case "Friday":
-                isExisting = checkDuplicate(mFriday, createdtitle);
-                if (!isExisting) {
-                    mFriday.add(new CDate(createdtitle, createdtime, createdcolor));
-                    c.set(Calendar.DAY_OF_WEEK, Calendar.FRIDAY);
-                }
-                break;
-            case "Saturday":
-                isExisting = checkDuplicate(mSaturday, createdtitle);
-                if (!isExisting) {
-                    mSaturday.add(new CDate(createdtitle, createdtime, createdcolor));
-                    c.set(Calendar.DAY_OF_WEEK, Calendar.SATURDAY);
-                }
-                break;
-            case "Sunday":
-                isExisting = checkDuplicate(mSunday, createdtitle);
-                if (!isExisting) {
-                    mSunday.add(new CDate(createdtitle, createdtime, createdcolor));
-                    c.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
-                }
-                break;
-        }
-
-        //format time
-        char[] timechars = createdtime.toString().toCharArray();
-
-        if (timechars.length == 4) {
-            c.set(Calendar.HOUR_OF_DAY, Integer.parseInt(timechars[0] + String.valueOf(timechars[1])));
-            c.set(Calendar.MINUTE, Integer.parseInt(timechars[2] + String.valueOf(timechars[3])));
-        } else {
-            c.set(Calendar.HOUR_OF_DAY, timechars[0]);
-            c.set(Calendar.MINUTE, Integer.parseInt(timechars[1] + String.valueOf(timechars[2])));
-        }
-        c.set(Calendar.SECOND, 0);
-        c.set(Calendar.MILLISECOND, 0);
-
-        Calendar c2 = Calendar.getInstance();
-        long currenttime = c2.getTimeInMillis();
-        c2.setTime(c.getTime());
-
-
-        if (!isExisting && !notification.equals("no notification") && c.getTimeInMillis() > currenttime) {
-            Toast toast = Toast.makeText(context, "", Toast.LENGTH_SHORT);
-            TextView v;
-            switch (notification) {
-                case "10 minutes before start":
-                    toast = Toast.makeText(context, "You will be reminded 10 minutes before your appointment starts", Toast.LENGTH_LONG);
-                    c.add(Calendar.MINUTE, -10);
-                    break;
-                case "30 minutes before start":
-                    toast = Toast.makeText(context, "You will be reminded 30 minutes before your appointment starts", Toast.LENGTH_LONG);
-                    c.add(Calendar.MINUTE, -30);
-                    break;
-                case "1 hour before start":
-                    toast = Toast.makeText(context, "You will be reminded 1 hour before your appointment starts", Toast.LENGTH_LONG);
-                    c.add(Calendar.HOUR_OF_DAY, -1);
-                    break;
-                case "1 day before start":
-                    toast = Toast.makeText(context, "You will be reminded 1 day before your appointment starts", Toast.LENGTH_LONG);
-                    c.add(Calendar.DAY_OF_WEEK, -1);
-                    c.set(Calendar.HOUR_OF_DAY, 16);
-                    c.set(Calendar.MINUTE, 30);
-                    if (day.equals("Monday")) {
-                        c.set(Calendar.WEEK_OF_YEAR, Integer.parseInt(weekdate) - 1);
-                    }
-                    break;
-                case "1 week before start":
-                    toast = Toast.makeText(context, "You will be reminded 1 week before your appointment starts", Toast.LENGTH_LONG);
-                    c.add(Calendar.DAY_OF_WEEK, -7);
-                    c.set(Calendar.HOUR_OF_DAY, 16);
-                    c.set(Calendar.MINUTE, 30);
-                    if (day.equals("Monday")) {
-                        c.set(Calendar.WEEK_OF_YEAR, Integer.parseInt(weekdate) - 1);
-                    }
-                    break;
-            }
-            v = toast.getView().findViewById(android.R.id.message);
-            if (v != null) v.setGravity(Gravity.CENTER);
-            toast.show();
-
-            setAlarm(c, createdtitle, createdcolor);
-        }
-
-        if (!isExisting && c2.getTimeInMillis() > currenttime) {
-            setAlarm(c2, createdtitle, createdcolor);
-        }
-
-        ((Activity) context).getIntent().removeExtra("title");
-        save(context, weekdate);
-    }
-
-    private void deleteDate(String day, int delpos, View view, String weekdate, Integer page) {
-        final SharedPreferences mPreferences = PreferenceManager.getDefaultSharedPreferences(view.getContext());
-        ArrayList<String> list_todos = new ArrayList<>();
-
-        switch (day) {
-            case "Monday":
-                for (int i = 0; !mPreferences.getString("t" + i, "").equals(""); i++) {
-                    if (!mPreferences.getString("t" + i, "").contains(mMonday.get(delpos).title())) {
-                        list_todos.add(mPreferences.getString("t" + i, ""));
-                    }
-                }
-                removeAlert(mMonday.get(delpos).title());
-                mMonday.remove(delpos);
-                break;
-            case "Tuesday":
-                for (int i = 0; !mPreferences.getString("t" + i, "").equals(""); i++) {
-                    if (!mPreferences.getString("t" + i, "").contains(mTuesday.get(delpos).time() + ";" + mTuesday.get(delpos).title())) {
-                        list_todos.add(mPreferences.getString("t" + i, ""));
-                    }
-                }
-                removeAlert(mTuesday.get(delpos).title());
-                mTuesday.remove(delpos);
-                break;
-            case "Wednesday":
-                //if its not the deleted -> add it to the list
-                for (int i = 0; !mPreferences.getString("t" + i, "").equals(""); i++) {
-                    if (!mPreferences.getString("t" + i, "").contains(mWednesday.get(delpos).title() + ";" + mWednesday.get(delpos).title())) {
-                        list_todos.add(mPreferences.getString("t" + i, ""));
-                    }
-                }
-                removeAlert(mWednesday.get(delpos).title());
-                mWednesday.remove(delpos);
-                break;
-            case "Thursday":
-                for (int i = 0; !mPreferences.getString("t" + i, "").equals(""); i++) {
-                    if (!mPreferences.getString("t" + i, "").contains(mThursday.get(delpos).time() + ";" + mThursday.get(delpos).title())) {
-                        list_todos.add(mPreferences.getString("t" + i, ""));
-                    }
-                }
-                removeAlert(mThursday.get(delpos).title());
-                mThursday.remove(delpos);
-                break;
-            case "Friday":
-                for (int i = 0; !mPreferences.getString("t" + i, "").equals(""); i++) {
-                    if (!mPreferences.getString("t" + i, "").contains(mFriday.get(delpos).time() + ";" + mFriday.get(delpos).title())) {
-                        list_todos.add(mPreferences.getString("t" + i, ""));
-                    }
-                }
-                removeAlert(mFriday.get(delpos).title());
-                mFriday.remove(delpos);
-                break;
-            case "Saturday":
-                for (int i = 0; !mPreferences.getString("t" + i, "").equals(""); i++) {
-                    if (!mPreferences.getString("t" + i, "").contains(mSaturday.get(delpos).time() + ";" + mSaturday.get(delpos).title())) {
-                        list_todos.add(mPreferences.getString("t" + i, ""));
-                    }
-                }
-                removeAlert(mSaturday.get(delpos).title());
-                mSaturday.remove(delpos);
-                break;
-            case "Sunday":
-                for (int i = 0; !mPreferences.getString("t" + i, "").equals(""); i++) {
-                    if (!mPreferences.getString("t" + i, "").contains(mSunday.get(delpos).time() + ";" + mSunday.get(delpos).title())) {
-                        list_todos.add(mPreferences.getString("t" + i, ""));
-                    }
-                }
-                removeAlert(mSunday.get(delpos).title());
-                mSunday.remove(delpos);
-                break;
-        }
-        //save
-        for (int i = 0; i < list_todos.size(); i++) {
-            mPreferences.edit().putString("t" + i, list_todos.get(i)).apply();
-        }
-        mPreferences.edit().putString("t" + list_todos.size(), "").apply();
-
-        save(context, weekdate);
-        initWeekPage(view, page, weekdate);
-        ((Activity) context).getIntent().removeExtra("day");
     }
 
 
@@ -328,25 +94,25 @@ public class WeekPage {
             final WeekRecyclerAdapter adapter;
             switch (Days.indexOf(day)) {
                 default:
-                    adapter = new WeekRecyclerAdapter(context, mMonday, weekdate, "Monday");
+                    adapter = new WeekRecyclerAdapter(context, mWeek.getMonday(), weekdate, "Monday");
                     break;
                 case 1:
-                    adapter = new WeekRecyclerAdapter(context, mTuesday, weekdate, "Tuesday");
+                    adapter = new WeekRecyclerAdapter(context, mWeek.getTuesday(), weekdate, "Tuesday");
                     break;
                 case 2:
-                    adapter = new WeekRecyclerAdapter(context, mWednesday, weekdate, "Wednesday");
+                    adapter = new WeekRecyclerAdapter(context, mWeek.getmWednesday(), weekdate, "Wednesday");
                     break;
                 case 3:
-                    adapter = new WeekRecyclerAdapter(context, mThursday, weekdate, "Thursday");
+                    adapter = new WeekRecyclerAdapter(context, mWeek.getThursday(), weekdate, "Thursday");
                     break;
                 case 4:
-                    adapter = new WeekRecyclerAdapter(context, mFriday, weekdate, "Friday");
+                    adapter = new WeekRecyclerAdapter(context, mWeek.getFriday(), weekdate, "Friday");
                     break;
                 case 5:
-                    adapter = new WeekRecyclerAdapter(context, mSaturday, weekdate, "Saturday");
+                    adapter = new WeekRecyclerAdapter(context, mWeek.getSaturday(), weekdate, "Saturday");
                     break;
                 case 6:
-                    adapter = new WeekRecyclerAdapter(context, mSunday, weekdate, "Sunday");
+                    adapter = new WeekRecyclerAdapter(context, mWeek.getSunday(), weekdate, "Sunday");
                     break;
             }
             day.setAdapter(adapter);
@@ -389,38 +155,38 @@ public class WeekPage {
         for (RecyclerView day : days) {
             switch (days.indexOf(day)) {
                 case 0:
-                    if (mMonday.size() > 0) {
-                        day.setMinimumHeight(mMonday.size() * fortytwo);
+                    if (mWeek.getMonday().size() > 0) {
+                        day.setMinimumHeight(mWeek.getMonday().size() * fortytwo);
                     }
                     break;
                 case 1:
-                    if (mTuesday.size() > 0) {
-                        day.setMinimumHeight(mTuesday.size() * fortytwo);
+                    if (mWeek.getTuesday().size() > 0) {
+                        day.setMinimumHeight(mWeek.getTuesday().size() * fortytwo);
                     }
                     break;
                 case 2:
-                    if (mWednesday.size() > 0) {
-                        day.setMinimumHeight(mWednesday.size() * fortytwo);
+                    if (mWeek.getmWednesday().size() > 0) {
+                        day.setMinimumHeight(mWeek.getmWednesday().size() * fortytwo);
                     }
                     break;
                 case 3:
-                    if (mThursday.size() > 0) {
-                        day.setMinimumHeight(mThursday.size() * fortytwo);
+                    if (mWeek.getThursday().size() > 0) {
+                        day.setMinimumHeight(mWeek.getThursday().size() * fortytwo);
                     }
                     break;
                 case 4:
-                    if (mFriday.size() > 0) {
-                        day.setMinimumHeight(mFriday.size() * fortytwo);
+                    if (mWeek.getFriday().size() > 0) {
+                        day.setMinimumHeight(mWeek.getFriday().size() * fortytwo);
                     }
                     break;
                 case 5:
-                    if (mSaturday.size() > 0) {
-                        day.setMinimumHeight(mSaturday.size() * fortytwo);
+                    if (mWeek.getSaturday().size() > 0) {
+                        day.setMinimumHeight(mWeek.getSaturday().size() * fortytwo);
                     }
                     break;
                 case 6:
-                    if (mSunday.size() > 0) {
-                        day.setMinimumHeight(mSunday.size() * fortytwo);
+                    if (mWeek.getSunday().size() > 0) {
+                        day.setMinimumHeight(mWeek.getSunday().size() * fortytwo);
                     }
                     break;
             }
@@ -617,6 +383,7 @@ public class WeekPage {
 
         Button addbtn = myDialog.findViewById(R.id.addbtn);
         final EditText titletext = myDialog.findViewById(R.id.titletext);
+        final EditText desctext = myDialog.findViewById(R.id.desctext);
         final EditText timetext = myDialog.findViewById(R.id.timetext);
         final EditText timetext2 = myDialog.findViewById(R.id.timetext2);
         timetext.addTextChangedListener(new TextWatcher() {
@@ -638,12 +405,11 @@ public class WeekPage {
 
             }
         });
-        //Button colorbtn = myDialog.findViewById(R.id.colorbtn);
-        Button colorbtn = myDialog.findViewById(R.id.textView);
+        Button settings = myDialog.findViewById(R.id.settings);
         myDialog.findViewById(R.id.textView).setTag("blue"); //Standartfarbe blau
         myDialog.findViewById(R.id.textView).setTag(R.id.slider, "no notification");
 
-        colorbtn.setOnClickListener(new View.OnClickListener() {
+        settings.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 final Dialog myColorDialog = new Dialog(mContext);
@@ -764,6 +530,7 @@ public class WeekPage {
             @Override
             public void onClick(View v) {
                 String title = titletext.getText().toString();
+                String desc = desctext.getText().toString();
                 String time1 = timetext.getText().toString();
                 String time2 = timetext2.getText().toString();
 
@@ -772,17 +539,12 @@ public class WeekPage {
 
                 if (!title.isEmpty() && Integer.parseInt(time1) < 24 && Integer.parseInt(time1) > 0 && Integer.parseInt(time2) < 61) {
                     Intent intent = new Intent(mContext, StartpageBackground.class);
-                    title = title.replace(",", "");
-                    title = title.replace(";", "");
-                    if (title.endsWith("+") || title.endsWith("-")) {
-                        title = title.replace("+", "");
-                        title = title.replace("-", "");
-                    }
                     String time = (time1 + time2);
 
                     //create(title, Integer.parseInt(time), myDialog.findViewById(R.id.textView).getTag().toString(), day, adapter, weekdate);
                     myDialog.dismiss();
                     intent.putExtra("title", title);
+                    intent.putExtra("desc", desc);
                     intent.putExtra("time", time);
                     intent.putExtra("day", day);
                     intent.putExtra("notification", myDialog.findViewById(R.id.textView).getTag(R.id.slider).toString());
@@ -805,9 +567,10 @@ public class WeekPage {
         myDialog.show();
 
         final EditText titletext = myDialog.findViewById(R.id.titletext);
+        final EditText desctext = myDialog.findViewById(R.id.desctext);
         final EditText timetext = myDialog.findViewById(R.id.timetext);
         final EditText timetext2 = myDialog.findViewById(R.id.timetext2);
-        Button colorbtn = myDialog.findViewById(R.id.textView);
+        Button settings = myDialog.findViewById(R.id.settings);
         Button addbtn = myDialog.findViewById(R.id.addbtn);
 
         //keep writing
@@ -833,7 +596,7 @@ public class WeekPage {
         myDialog.findViewById(R.id.textView).setTag("blue"); //Default color is blue
         myDialog.findViewById(R.id.textView).setTag(R.id.slider, "no notification");
 
-        colorbtn.setOnClickListener(new View.OnClickListener() {
+        settings.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 final Dialog myColorDialog = new Dialog(context);
@@ -954,6 +717,7 @@ public class WeekPage {
             @Override
             public void onClick(View v) {
                 String title = titletext.getText().toString();
+                String desc = desctext.getText().toString();
                 String time1 = timetext.getText().toString();
                 String time2 = timetext2.getText().toString();
 
@@ -961,12 +725,6 @@ public class WeekPage {
                 time2 = checkTimeInput(time2, "00");
                 if (!title.isEmpty() && Integer.parseInt(time1) < 24 && (Integer.parseInt(time1) + Integer.parseInt(time2)) > 0 && Integer.parseInt(time2) < 61) {
                     Intent intent = new Intent(context, StartpageBackground.class);
-                    //catch errors
-                    title = title.replace(";", "");
-                    if (title.endsWith("+") || title.endsWith("-")) {
-                        title = title.replace("+", "");
-                        title = title.replace("-", "");
-                    }
                     String complete_time = (time1 + time2);
 
                     switch (c.get(Calendar.DAY_OF_WEEK)) {
@@ -994,6 +752,7 @@ public class WeekPage {
                     }
 
                     intent.putExtra("title", title);
+                    intent.putExtra("desc", desc);
                     intent.putExtra("time", complete_time);
                     intent.putExtra("color", myDialog.findViewById(R.id.textView).getTag().toString());
                     intent.putExtra("notification", myDialog.findViewById(R.id.textView).getTag(R.id.slider).toString());
@@ -1005,34 +764,6 @@ public class WeekPage {
             }
         });
         myDialog.show();
-    }
-
-    private void deleteOldData(String weekdate) {
-        FileInputStream fis = null;
-        String FILE_NAME = Integer.parseInt(weekdate) - 2 + ".txt";
-        try {
-            fis = context.openFileInput(FILE_NAME);
-            InputStreamReader isr = new InputStreamReader(fis);
-            BufferedReader br = new BufferedReader(isr);
-            String text;
-
-            while ((text = br.readLine()) != null) {
-                String[] newtext = text.split(",");
-                removeAlert(newtext[1]);
-            }
-        } catch (
-                IOException e) {
-            e.printStackTrace();
-        } finally {
-            if (fis != null) {
-                try {
-                    fis.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        new File(context.getFilesDir(), (Integer.parseInt(weekdate) - 2) + ".txt").delete();
     }
 
     private void setColorAtOpening(String color, Dialog myColorDialog) {
@@ -1060,165 +791,6 @@ public class WeekPage {
         }
     }
 
-    //FileManager
-    private void save(Context context, String weekdate) {
-        String FILE_NAME = weekdate + ".txt";
-        ArrayList<String> text = new ArrayList<>();
-
-        sortevery();
-
-        for (int i = 0; i < mMonday.size(); i++) {
-            text.add("Monday" + "," + mMonday.get(i).title() + "," + mMonday.get(i).time() + "," + mMonday.get(i).color() + "\n");
-        }
-        for (int i = 0; i < mTuesday.size(); i++) {
-            text.add("Tuesday" + "," + mTuesday.get(i).title() + "," + mTuesday.get(i).time() + "," + mTuesday.get(i).color() + "\n");
-        }
-        for (int i = 0; i < mWednesday.size(); i++) {
-            text.add("Wednesday" + "," + mWednesday.get(i).title() + "," + mWednesday.get(i).time() + "," + mWednesday.get(i).color() + "\n");
-        }
-        for (int i = 0; i < mThursday.size(); i++) {
-            text.add("Thursday" + "," + mThursday.get(i).title() + "," + mThursday.get(i).time() + "," + mThursday.get(i).color() + "\n");
-        }
-        for (int i = 0; i < mFriday.size(); i++) {
-            text.add("Friday" + "," + mFriday.get(i).title() + "," + mFriday.get(i).time() + "," + mFriday.get(i).color() + "\n");
-        }
-        for (int i = 0; i < mSaturday.size(); i++) {
-            text.add("Saturday" + "," + mSaturday.get(i).title() + "," + mSaturday.get(i).time() + "," + mSaturday.get(i).color() + "\n");
-        }
-        for (int i = 0; i < mSunday.size(); i++) {
-            text.add("Sunday" + "," + mSunday.get(i).title() + "," + mSunday.get(i).time() + "," + mSunday.get(i).color() + "\n");
-        }
-        FileOutputStream fos = null;
-        try {
-            fos = context.openFileOutput(FILE_NAME, MODE_PRIVATE);
-            for (int i = 0; i < mMonday.size() + mTuesday.size() + mWednesday.size() + mThursday.size() + mFriday.size() + mSaturday.size() + mSunday.size(); i++) {
-                fos.write(text.get(i).getBytes());
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            if (fos != null) {
-                try {
-                    fos.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
-
-    private void load(Context context, String weekdate) {
-        FileInputStream fis = null;
-        String FILE_NAME = weekdate + ".txt";
-
-        try {
-            fis = context.openFileInput(FILE_NAME);
-            InputStreamReader isr = new InputStreamReader(fis);
-            BufferedReader br = new BufferedReader(isr);
-            String text;
-
-            while ((text = br.readLine()) != null) {
-                String[] newtext = text.split(",");
-                switch (newtext[0]) {
-                    case "Monday":
-                        mMonday.add(new CDate(newtext[1], Integer.parseInt(newtext[2]), newtext[3]));
-                        break;
-                    case "Tuesday":
-                        mTuesday.add(new CDate(newtext[1], Integer.parseInt(newtext[2]), newtext[3]));
-                        break;
-                    case "Wednesday":
-                        mWednesday.add(new CDate(newtext[1], Integer.parseInt(newtext[2]), newtext[3]));
-                        break;
-                    case "Thursday":
-                        mThursday.add(new CDate(newtext[1], Integer.parseInt(newtext[2]), newtext[3]));
-                        break;
-                    case "Friday":
-                        mFriday.add(new CDate(newtext[1], Integer.parseInt(newtext[2]), newtext[3]));
-                        break;
-                    case "Saturday":
-                        mSaturday.add(new CDate(newtext[1], Integer.parseInt(newtext[2]), newtext[3]));
-                        break;
-                    case "Sunday":
-                        mSunday.add(new CDate(newtext[1], Integer.parseInt(newtext[2]), newtext[3]));
-                        break;
-                }
-            }
-        } catch (
-                IOException e) {
-            e.printStackTrace();
-        } finally {
-            if (fis != null) {
-                try {
-                    fis.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
-
-    //Notifications
-    private void setAlarm(Calendar c, String createdtitle, String notification) {
-        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        Intent intent = new Intent(context, AlertReceiver.class);
-        final int id = (int) System.currentTimeMillis();
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, id, intent, 0);
-
-        // schreibe es in die Alert List
-        context.getSharedPreferences("createdtitle", MODE_PRIVATE).edit().putString("createdtitle", createdtitle).apply();
-
-        //new File(context.getFilesDir(), "alerts.txt").delete();
-        ArrayList<Alert> alerts = cFiles.loadAlerts(context);
-
-        // add + for one hour, "" for on beginn and - for one day
-        switch (notification) {
-            case "10 minutes before start":
-                alerts.add(new Alert(createdtitle, c.getTimeInMillis() + "a"));
-                break;
-            case "30 minutes before start":
-                alerts.add(new Alert(createdtitle, c.getTimeInMillis() + "b"));
-                break;
-            case "1 hour before start":
-                alerts.add(new Alert(createdtitle, c.getTimeInMillis() + "c"));
-                break;
-            case "1 day before start":
-                alerts.add(new Alert(createdtitle, c.getTimeInMillis() + "d"));
-                break;
-            case "1 week before start":
-                alerts.add(new Alert(createdtitle, c.getTimeInMillis() + "e"));
-                break;
-            default:
-                alerts.add(new Alert(createdtitle, c.getTimeInMillis() + "x"));
-                break;
-        }
-        alerts = sortAlerts(alerts);
-
-        ArrayList<Alert> finalAlerts = new ArrayList<>();
-
-        for (Alert i : alerts) {
-            if (!i.title().equals("--deleted--")) {
-                finalAlerts.add(i);
-            }
-        }
-
-        cFiles.saveAlerts(context, finalAlerts);
-
-        (alarmManager).setExact(AlarmManager.RTC_WAKEUP, c.getTimeInMillis(), pendingIntent);
-    }
-
-    private void removeAlert(String title) {
-        ArrayList<Alert> alertslist = cFiles.loadAlerts(context);
-        ArrayList<Alert> finalAlerts = new ArrayList<>();
-
-        for (Alert alert : alertslist) {
-            if (!alert.title().equals(title)) {
-                finalAlerts.add(alert);
-            }
-        }
-
-        cFiles.saveAlerts(context, finalAlerts);
-    }
-
     //Helpers
     private Integer DPtoPixel(View view, Integer dp) {
         final float scale = view.getContext().getResources().getDisplayMetrics().density;
@@ -1241,101 +813,6 @@ public class WeekPage {
     private String checkTimeInput(String time, String standard) {
         time = time.length() == 0 ? standard : time.length() == 1 ? "0" + time : time;
         return time;
-    }
-
-    // Sorting and Lists
-    private void sortevery() {
-        mMonday = sort(mMonday);
-        mTuesday = sort(mTuesday);
-        mWednesday = sort(mWednesday);
-        mThursday = sort(mThursday);
-        mFriday = sort(mFriday);
-        mSaturday = sort(mSaturday);
-        mSunday = sort(mSunday);
-    }
-
-    private ArrayList<CDate> sort(ArrayList<CDate> Dates) {
-        int i;
-        int k;
-        ArrayList<CDate> finalDates = new ArrayList<>();
-
-        if (!Dates.isEmpty()) {
-            ArrayList<Integer> newTime = new ArrayList<>();
-            for (i = 0; i < Dates.size(); i++) {
-                newTime.add(Dates.get(i).time());
-            }
-            ArrayList<String> newTitle = new ArrayList<>();
-            for (i = 0; i < Dates.size(); i++) {
-                newTitle.add(Dates.get(i).title());
-            }
-            ArrayList<String> newColor = new ArrayList<>();
-            for (i = 0; i < Dates.size(); i++) {
-                newColor.add(Dates.get(i).color());
-            }
-
-            Collections.sort(newTime);
-
-            for (k = 0; k < Dates.size(); k++) {
-                //Wenn der Wert anders is
-                //if (!Dates.get(i).time().equals(newTime.get(i))) {
-                for (i = 0; i < Dates.size(); i++) {
-                    //Dann gucke wo der Wert gleich dem anderen entspricht
-                    if (Dates.get(i).time().equals(newTime.get(k))) {
-                        finalDates.add(new CDate(newTitle.get(i), newTime.get(k), newColor.get(i)));
-                        Dates.set(i, new CDate("", -1, "")); //erlaubt Dopplungen
-                        break;
-                    }
-                }
-                //}
-            }
-        }
-        return finalDates;
-    }
-
-    private ArrayList<Alert> sortAlerts(ArrayList<Alert> alerts) {
-        int i;
-        int k;
-        ArrayList<Alert> finalAlerts = new ArrayList<>();
-
-        if (!alerts.isEmpty()) {
-            ArrayList<String> newTime = new ArrayList<>();
-            ArrayList<String> newTitle = new ArrayList<>();
-            for (Alert alert : alerts) {
-                newTime.add(alert.time().replace(alert.time().charAt(alert.time().length() - 1), '0'));
-                newTitle.add(alert.title());
-            }
-
-            Collections.sort(newTime);
-
-            for (k = 0; k < alerts.size(); k++) {
-                //Wenn der Wert anders is
-                //if (!Dates.get(i).time().equals(newTime.get(i))) {
-                for (i = 0; i < alerts.size(); i++) {
-                    //Dann gucke wo der Wert gleich dem anderen entspricht
-                    if (alerts.get(i).time().replace(alerts.get(i).time().charAt(alerts.get(i).time().length() - 1), '0').equals(newTime.get(k))) {
-                        finalAlerts.add(new Alert(newTitle.get(i), newTime.get(k)));
-                        alerts.set(i, new Alert("", "-1")); //erlaubt Dopplungen
-                        break;
-                    }
-                }
-                //}
-            }
-        }
-        return finalAlerts;
-    }
-
-    private Boolean checkDuplicate(ArrayList<CDate> Dates, String createdtitle) {
-        for (int i = 0; i < Dates.size(); i++) {
-            if (Dates.get(i).title().equals(createdtitle)) {
-                Toast toast = Toast.makeText(context, "Title already exists", Toast.LENGTH_LONG);
-                TextView v = toast.getView().findViewById(android.R.id.message);
-                if (v != null) v.setGravity(Gravity.CENTER);
-                toast.show();
-                return true;
-            }
-        }
-        return false;
-
     }
 
 }

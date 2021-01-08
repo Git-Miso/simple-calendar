@@ -3,6 +3,8 @@ package com.example.minimalisticcalendar.More;
 import android.content.Context;
 
 import com.example.minimalisticcalendar.Notifications.Alert;
+import com.example.minimalisticcalendar.Startpage.CDate;
+import com.example.minimalisticcalendar.Startpage.CWeek;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -12,11 +14,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 import static android.content.Context.MODE_PRIVATE;
 
 public class cFiles {
+    private final static Gson gson = new Gson();
 
     public static String loadBirthdays(Context c) {
         String text, fulltext = "";
@@ -42,7 +46,6 @@ public class cFiles {
     public static void saveBirthdays(Context context, ArrayList<Birthday> Birthdays) {
         FileOutputStream fos;
         String FILE_NAME = "birthdays.txt";
-        Gson gson = new Gson();
 
         try {
             fos = context.openFileOutput(FILE_NAME, MODE_PRIVATE);
@@ -73,7 +76,6 @@ public class cFiles {
             e.printStackTrace();
         }
 
-        Gson gson = new Gson();
         Type AlertType = new TypeToken<ArrayList<Alert>>() {
         }.getType();
         alertslist = gson.fromJson(String.valueOf(fulltext), AlertType);
@@ -87,7 +89,6 @@ public class cFiles {
     public static void saveAlerts(Context context, ArrayList<Alert> Alerts) {
         FileOutputStream fos;
         String FILE_NAME = "alerts.txt";
-        Gson gson = new Gson();
 
         try {
             fos = context.openFileOutput(FILE_NAME, MODE_PRIVATE);
@@ -96,5 +97,63 @@ public class cFiles {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public static void saveWeek(Context context, String weekdate, CWeek mWeek) {
+        FileOutputStream fos;
+        String FILE_NAME = weekdate + ".txt";
+
+        mWeek.sortdays();
+
+        try {
+            fos = context.openFileOutput(FILE_NAME, MODE_PRIVATE);
+            fos.write(gson.toJson(mWeek).getBytes(StandardCharsets.UTF_8));
+            fos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static CWeek loadWeek(Context context, String weekdate) {
+        CWeek mWeek;
+        FileInputStream fis;
+        String FILE_NAME = weekdate + ".txt";
+        StringBuilder fulltext = new StringBuilder();
+        String text;
+
+        try {
+            fis = context.openFileInput(FILE_NAME);
+            InputStreamReader isr = new InputStreamReader(fis);
+            BufferedReader br = new BufferedReader(isr);
+
+            while ((text = br.readLine()) != null) {
+                fulltext.append(text);
+            }
+            fis.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        Type WeekType = new TypeToken<CWeek>() {
+        }.getType();
+
+        mWeek = gson.fromJson(String.valueOf(fulltext), WeekType);
+        if (mWeek == null) {
+            mWeek = new CWeek(new ArrayList<CDate>(),new ArrayList<CDate>(),new ArrayList<CDate>(),new ArrayList<CDate>(),new ArrayList<CDate>(),new ArrayList<CDate>(),new ArrayList<CDate>());
+        }
+
+        return mWeek;
+    }
+
+    public static void removeAlarm(Context context, String title) {
+        ArrayList<Alert> alertslist = cFiles.loadAlerts(context);
+        ArrayList<Alert> finalAlerts = new ArrayList<>();
+
+        for (Alert alert : alertslist) {
+            if (!alert.title().equals(title)) {
+                finalAlerts.add(alert);
+            }
+        }
+        cFiles.saveAlerts(context, finalAlerts);
     }
 }

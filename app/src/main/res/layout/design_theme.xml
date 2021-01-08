@@ -360,6 +360,29 @@
                 </LinearLayout>
 
                 <LinearLayout
+                    android:id="@+id/l26"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginEnd="10dp"
+                    android:layout_marginBottom="5dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/design_theme_bg"
+                    android:orientation="vertical"
+                    android:paddingBottom="1dp"
+                    android:visibility="invisible"
+                    android:weightSum="0" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+
+                <LinearLayout
                     android:id="@+id/l6"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -380,7 +403,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_horizontal"
-                        android:background="@drawable/design_roundedbutton_blue"
+                        android:background="@drawable/design_roundedbutton_dark"
                         android:fontFamily="sans-serif-thin"
                         android:gravity="center"
                         android:paddingStart="10dp"
@@ -416,12 +439,6 @@
                         app:srcCompat="@drawable/baseline_add_24" />
 
                 </LinearLayout>
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="horizontal">
 
                 <LinearLayout
                     android:id="@+id/l7"
@@ -431,7 +448,7 @@
                     android:layout_marginTop="5dp"
                     android:layout_marginEnd="10dp"
                     android:layout_marginBottom="5dp"
-                    android:layout_weight="2"
+                    android:layout_weight="1"
                     android:background="@drawable/design_theme_bg"
                     android:minHeight="100dp"
                     android:orientation="vertical"
@@ -442,7 +459,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_horizontal"
-                        android:background="@drawable/design_roundedbutton_blue"
+                        android:background="@drawable/design_roundedbutton_dark"
                         android:fontFamily="sans-serif-thin"
                         android:gravity="center_horizontal"
                         android:paddingStart="10dp"
@@ -478,22 +495,6 @@
                         app:srcCompat="@drawable/baseline_add_24" />
 
                 </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/l26"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_columnWeight="1"
-                    android:layout_marginStart="10dp"
-                    android:layout_marginTop="5dp"
-                    android:layout_marginEnd="10dp"
-                    android:layout_marginBottom="5dp"
-                    android:layout_weight="2"
-                    android:background="@drawable/design_theme_bg"
-                    android:orientation="vertical"
-                    android:paddingBottom="1dp"
-                    android:visibility="invisible"
-                    android:weightSum="0" />
 
             </LinearLayout>
 

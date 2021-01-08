@@ -47,8 +47,19 @@ public class WeekRecyclerAdapter extends RecyclerView.Adapter<WeekRecyclerAdapte
             public void onClick(View v) {
                 AlertDialog.Builder alert = new AlertDialog.Builder(mContext);
                 alert.setTitle(holder.title.getText());
-                alert.setMessage("This date starts at "+holder.time.getText());
-                alert.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+                if(mDates.get(holder.getAdapterPosition()).desc()!=null && !mDates.get(holder.getAdapterPosition()).desc().equals("")) {
+                    alert.setMessage(mDates.get(holder.getAdapterPosition()).desc());
+                }else{
+                    alert.setMessage("no description");
+                }
+                alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+
+                alert.setNeutralButton("Delete", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.dismiss();
@@ -57,12 +68,6 @@ public class WeekRecyclerAdapter extends RecyclerView.Adapter<WeekRecyclerAdapte
                         intent.putExtra("week", mweekdate);
                         intent.putExtra("day", mcurrent_day);
                         mContext.startActivity(intent);
-                    }
-                });
-                alert.setNegativeButton("Back", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
                     }
                 });
 
